@@ -105,13 +105,13 @@ const RegisterForm = () => {
                   <FormItem>
                      <FormLabel>Xác nhận mật khẩu</FormLabel>
                      <FormControl>
-                        <Input placeholder="Shadcn UI" {...field} />
+                        <Input placeholder="Shadcn UI" {...field} type="password"/>
                      </FormControl>
                      <FormMessage />
                   </FormItem>
                )}
             />
-            <Button type="submit" className="!mt-10">
+            <Button type="submit" className="!mt-10 w-full">
                Đăng ký
             </Button>
          </form>
