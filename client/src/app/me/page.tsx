@@ -1,6 +1,7 @@
 import envConfig from "@/config";
 import React from "react";
 import { cookies } from "next/headers";
+import Profile from "@/app/me/profile";
 
 const MeProfile = async () => {
    const cookieStore = await cookies();
@@ -17,7 +18,7 @@ const MeProfile = async () => {
             Authorization: `Bearer ${sessionToken?.value}`,
          },
       }
-   );
+   ); 
    const payload = await response.json();
    const data = {
       // Tạo object chứa thông tin kết quả
@@ -28,14 +29,14 @@ const MeProfile = async () => {
    if (!response.ok) {
       throw data;
    }
-   console.log(data);
    return (
       <div className="px-40">
          <div>
             <h1>Profile</h1>
             <h1>Xin chào {data.payload.data?.name}</h1>
          </div>
-      </div>
+         <Profile />
+      </div>   
    );
 };
 

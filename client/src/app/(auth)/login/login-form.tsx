@@ -21,7 +21,7 @@ import { useAppContext } from "@/app/app-provider";
 
 const LoginForm = () => {
    const { toast } = useToast();
-   const { setSessionToken} = useAppContext();
+   const { setSessionToken } = useAppContext();
    
    // 1. Define form.
    const form = useForm<LoginBodyType>({
@@ -99,7 +99,7 @@ const LoginForm = () => {
                variant: 'destructive'
             })
          }
-      }
+      } 
    }
    return (
       <Form {...form}>

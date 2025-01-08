@@ -3,7 +3,7 @@ import { createContext, useState, useContext } from "react";
 
 const AppContext = createContext({
    sessionToken: "",
-   setSessionToken: (sessionToken: string) => {},
+   setSessionToken: (sessionToken: string) => {}, // eslint-disable-line @typescript-eslint/no-unused-vars
 });
 
 export const useAppContext = () => {
@@ -16,10 +16,12 @@ export const useAppContext = () => {
 
 export default function AppProvider({
    children,
+   initialSessionToken = "",
 }: {
    children: React.ReactNode;
+   initialSessionToken: string;
 }) {
-   const [sessionToken, setSessionToken] = useState("");
+   const [sessionToken, setSessionToken] = useState(initialSessionToken);
 
    return (
       <AppContext.Provider value={{ sessionToken, setSessionToken }}>
