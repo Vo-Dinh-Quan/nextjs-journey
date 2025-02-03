@@ -14,13 +14,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
-import envConfig from "@/config";
 import { useToast } from "@/hooks/use-toast"
 import { useAppContext } from "@/app/app-provider";
+import authApiRequests from "@/apiRequests/auth";
+import { useRouter } from "next/navigation";
 
 
 const LoginForm = () => {
    const { toast } = useToast();
+   const router = useRouter();
+
    const { setSessionToken } = useAppContext();
    
    // 1. Define form.
@@ -36,47 +39,13 @@ const LoginForm = () => {
    async function onSubmit(values: LoginBodyType) {
       try {
          // Chờ kết quả từ fetch
-         const response = await fetch(
-            `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/login`,
-            {
-               method: "POST",
-               headers: {
-                  "Content-Type": "application/json",
-               },
-               body: JSON.stringify(values),
-            }
-         );
-         const payload = await response.json();
-         const data = { // Tạo object chứa thông tin kết quả
-            status: response.status,
-            payload,
-         };
-
-         if (!response.ok) {
-            throw data; 
-         }
-         console.log(data);
+         const response = await authApiRequests.login(values);
          toast({
-            description: data.payload.message,
+            description: response.payload.message,
          })
-         const resultFromNextServer =  await fetch('/api/auth', {
-            method: 'POST',
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-         }).then(async (res) => {
-            const payload = await res.json();
-            const data = {
-               status: res.status,
-               payload,
-            }
-            if (!res.ok) {
-               throw data;
-            }
-            return data
-         })
-         setSessionToken(resultFromNextServer.payload.data.token);
+         await authApiRequests.auth({ sessionToken: response.payload.data.token });
+         setSessionToken(response.payload.data.token);
+         router.push("/me");
          // em quân dừng lại ở bài học phút thứ 50:20
       } catch (error: any) {
          const errors = error.payload.errors as {     

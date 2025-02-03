@@ -18,6 +18,7 @@ import {
    RegisterBodyType,
 } from "@/schemaValidations/auth.schema";
 import envConfig from "@/config";
+import authApiRequests from "@/apiRequests/auth";
 
 const RegisterForm = () => {
    // 1. Define form.
@@ -33,17 +34,8 @@ const RegisterForm = () => {
 
    // 2. Define a submit handler.
    async function onSubmit(values: RegisterBodyType) {
-      const result = fetch(`${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/register`, {
-         method: "POST",
-         headers: {
-            "Content-Type": "application/json",
-         },
-         body: JSON.stringify(values),
-      })
-         .then((res) => res.json())
-         .then((data) => {
-            console.log(data);
-         });
+      const result = await authApiRequests.register(values);
+      // em quân đã dừng lại tại đây ở bài học phút thứ 31:12
       console.log(result);
    }
    return (
