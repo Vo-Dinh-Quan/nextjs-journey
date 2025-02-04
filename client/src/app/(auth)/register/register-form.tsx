@@ -17,10 +17,14 @@ import {
    RegisterBody,
    RegisterBodyType,
 } from "@/schemaValidations/auth.schema";
-import envConfig from "@/config";
 import authApiRequests from "@/apiRequests/auth";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const RegisterForm = () => {
+   const { toast } = useToast();
+   const router = useRouter();
+
    // 1. Define form.
    const form = useForm<RegisterBodyType>({
       resolver: zodResolver(RegisterBody),
@@ -34,9 +38,38 @@ const RegisterForm = () => {
 
    // 2. Define a submit handler.
    async function onSubmit(values: RegisterBodyType) {
-      const result = await authApiRequests.register(values);
-      // em quân đã dừng lại tại đây ở bài học phút thứ 31:12
-      console.log(result);
+      try {
+         // Chờ kết quả từ fetch
+         const response = await authApiRequests.register(values);
+         toast({
+            description: response.payload.message,
+         });
+         await authApiRequests.auth({
+            sessionToken: response.payload.data.token,
+         });
+         router.push("/me");
+      } catch (error: any) {
+         const errors = error.payload.errors as {
+            field: string;
+            message: string;
+         }[];
+         console.log(errors);
+         const status = error.status as number;
+         if (status === 422) {
+            errors.forEach((error) => {
+               form.setError(error.field as "email" | "password", {
+                  type: "server",
+                  message: error.message,
+               });
+            });
+         } else {
+            toast({
+               title: "Lỗi",
+               description: error.payload.message,
+               variant: "destructive",
+            });
+         }
+      }
    }
    return (
       <Form {...form}>
@@ -53,7 +86,11 @@ const RegisterForm = () => {
                   <FormItem>
                      <FormLabel>Tên</FormLabel>
                      <FormControl>
-                        <Input placeholder="Shadcn UI" {...field} />
+                        <Input
+                           placeholder="Shadcn UI"
+                           {...field}
+                           autoComplete="name"
+                        />
                      </FormControl>
                      <FormMessage />
                   </FormItem>
@@ -71,6 +108,7 @@ const RegisterForm = () => {
                            {...field}
                            type="email"
                            formNoValidate
+                           autoComplete="email"
                         />
                      </FormControl>
                      <FormMessage />
@@ -84,7 +122,11 @@ const RegisterForm = () => {
                   <FormItem>
                      <FormLabel>Mật khẩu</FormLabel>
                      <FormControl>
-                        <Input placeholder="Shadcn UI" {...field} />
+                        <Input
+                           placeholder="Shadcn UI"
+                           {...field}
+                           autoComplete="new-password"
+                        />
                      </FormControl>
                      <FormMessage />
                   </FormItem>
@@ -97,7 +139,12 @@ const RegisterForm = () => {
                   <FormItem>
                      <FormLabel>Xác nhận mật khẩu</FormLabel>
                      <FormControl>
-                        <Input placeholder="Shadcn UI" {...field} type="password"/>
+                        <Input
+                           placeholder="Shadcn UI"
+                           {...field}
+                           type="password"
+                           autoComplete="new-password"
+                        />
                      </FormControl>
                      <FormMessage />
                   </FormItem>

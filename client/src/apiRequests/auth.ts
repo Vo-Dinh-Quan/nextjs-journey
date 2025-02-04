@@ -11,7 +11,7 @@ const authApiRequests = {
    register: (body: RegisterBodyType) =>
       http.post<RegisterResType>("auth/register", body),
    auth: (body: { sessionToken: string }) =>
-      http.post("api/auth", body, { baseUrl: "" }),
+      http.post("api/auth", body, { baseUrl: "" }), // baseUrl: "" để gọi API đến Next.js Server
 };
 
 export default authApiRequests;

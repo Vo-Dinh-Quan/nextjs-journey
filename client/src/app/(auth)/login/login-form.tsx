@@ -15,7 +15,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { useToast } from "@/hooks/use-toast"
-import { useAppContext } from "@/app/app-provider";
 import authApiRequests from "@/apiRequests/auth";
 import { useRouter } from "next/navigation";
 
@@ -23,8 +22,6 @@ import { useRouter } from "next/navigation";
 const LoginForm = () => {
    const { toast } = useToast();
    const router = useRouter();
-
-   const { setSessionToken } = useAppContext();
    
    // 1. Define form.
    const form = useForm<LoginBodyType>({
@@ -44,7 +41,6 @@ const LoginForm = () => {
             description: response.payload.message,
          })
          await authApiRequests.auth({ sessionToken: response.payload.data.token });
-         setSessionToken(response.payload.data.token);
          router.push("/me");
          // em quân dừng lại ở bài học phút thứ 50:20
       } catch (error: any) {
@@ -90,6 +86,7 @@ const LoginForm = () => {
                            {...field}
                            type="email"
                            formNoValidate
+                           autoComplete="email"
                         />
                      </FormControl>
                      <FormMessage />
@@ -107,6 +104,7 @@ const LoginForm = () => {
                            placeholder="Shadcn UI"
                            {...field}
                            type="password"
+                           autoComplete="current-password"
                         />
                      </FormControl>
                      <FormMessage />

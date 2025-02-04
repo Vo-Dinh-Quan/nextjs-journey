@@ -7,8 +7,6 @@ const MeProfile = async () => {
    const cookieStore = await cookies();
    const sessionToken = cookieStore.get("sessionToken");
 
-   console.log(sessionToken);
-
    const response = await accountApiRequests.me(sessionToken?.value ?? '');
 
    return (

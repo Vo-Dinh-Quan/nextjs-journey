@@ -25,7 +25,6 @@ export default async function RootLayout({
    const cookieStore = await cookies();
    const sessionToken = cookieStore.get("sessionToken");
 
-   console.log("RootLayout", sessionToken);
    return ( 
       <html lang="en" suppressHydrationWarning>
          <body className={`${inter.className} antialiased`}>

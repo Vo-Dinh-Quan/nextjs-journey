@@ -26,7 +26,7 @@ Dấu & trong TypeScript được dùng để kết hợp hai kiểu (type) vớ
 Tại sao cần loại bỏ method khỏi RequestInit? Vì method sẽ được truyền vào hàm request, nếu không loại bỏ thì sẽ bị trùng lặp.
  */
 
-type CustomOptions = Omit<RequestInit, "method"> & {
+type CustomOptions = Omit<RequestInit, "method"> & { // chúng ta đã quy định method ở dưới http rồi nên không cần thiết phải quy định ở đây
    baseUrl?: string | undefined;
    // thực chất chúng ta tạo ra thằng CustomOptions này để thêm một thuộc tính mới là baseUrl vào RequestInit
 };
