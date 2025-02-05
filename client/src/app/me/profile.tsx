@@ -2,14 +2,21 @@
 
 import accountApiRequests from "@/apiRequests/account";
 import React, { useEffect } from "react";
+import { handleErrorApi } from "@/lib/utils";
 
 export default function Profile() {
    useEffect(() => {
       const fetchRequest = async () => {
-         const response = await accountApiRequests.meClient();
-         console.log(response);
+         try {
+            const result = await accountApiRequests.meClient();
+            console.log(result);
+         } catch (error) {
+            handleErrorApi({
+               error,
+            });
+         }
       };
       fetchRequest();
    }, []);
-   return <div>profile</div>;
+   return <div>profile client</div>;
 }

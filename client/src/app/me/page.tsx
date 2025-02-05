@@ -12,7 +12,7 @@ const MeProfile = async () => {
    return (
       <div className="px-40">
          <div>
-            <h1>Profile</h1>
+            <h1>Profile server</h1>
             <h1>Xin chào {response.payload.data?.name}</h1>
          </div>
          <Profile />

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,10 @@ import {
 import authApiRequests from "@/apiRequests/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { handleErrorApi } from "@/lib/utils";
 
 const RegisterForm = () => {
+   const [loading, setLoading] = useState(false);
    const { toast } = useToast();
    const router = useRouter();
 
@@ -38,6 +40,8 @@ const RegisterForm = () => {
 
    // 2. Define a submit handler.
    async function onSubmit(values: RegisterBodyType) {
+      if (loading) return;
+      setLoading(true);
       try {
          // Chờ kết quả từ fetch
          const response = await authApiRequests.register(values);
@@ -49,26 +53,13 @@ const RegisterForm = () => {
          });
          router.push("/me");
       } catch (error: any) {
-         const errors = error.payload.errors as {
-            field: string;
-            message: string;
-         }[];
-         console.log(errors);
-         const status = error.status as number;
-         if (status === 422) {
-            errors.forEach((error) => {
-               form.setError(error.field as "email" | "password", {
-                  type: "server",
-                  message: error.message,
-               });
-            });
-         } else {
-            toast({
-               title: "Lỗi",
-               description: error.payload.message,
-               variant: "destructive",
-            });
-         }
+         handleErrorApi({
+            error,
+            setError: form.setError, // cú pháp ở đây có nghĩa là setError sẽ được gán giá trị từ form.setError
+            // cú pháp này giúp chúng ta truyền giá trị setError từ form.setError vào hàm handleErrorApi
+         });
+      } finally {
+         setLoading(false);
       }
    }
    return (

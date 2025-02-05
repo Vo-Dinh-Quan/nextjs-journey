@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,11 @@ import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { useToast } from "@/hooks/use-toast"
 import authApiRequests from "@/apiRequests/auth";
 import { useRouter } from "next/navigation";
+import { handleErrorApi } from "@/lib/utils";
 
 
 const LoginForm = () => {
+   const [loading, setLoading] = useState(false);
    const { toast } = useToast();
    const router = useRouter();
    
@@ -34,6 +36,8 @@ const LoginForm = () => {
     
    // 2. Define a submit handler.
    async function onSubmit(values: LoginBodyType) {
+      if (loading) return;
+      setLoading(true);
       try {
          // Chờ kết quả từ fetch
          const response = await authApiRequests.login(values);
@@ -42,29 +46,15 @@ const LoginForm = () => {
          })
          await authApiRequests.auth({ sessionToken: response.payload.data.token });
          router.push("/me");
-         // em quân dừng lại ở bài học phút thứ 50:20
       } catch (error: any) {
-         const errors = error.payload.errors as {     
-            field : string, 
-            message: string
-         }[];
-         console.log(errors);
-         const status = error.status as number;
-         if (status === 422) {
-            errors.forEach((error) => {
-               form.setError(error.field as "email" | "password", {
-                  type: "server",
-                  message: error.message,
-               })
-            })
-         }else {
-            toast({
-               title: "Lỗi",
-               description: error.payload.message,
-               variant: 'destructive'
-            })
-         }
-      } 
+         handleErrorApi({
+            error,
+            setError: form.setError // cú pháp ở đây có nghĩa là setError sẽ được gán giá trị từ form.setError 
+            // cú pháp này giúp chúng ta truyền giá trị setError từ form.setError vào hàm handleErrorApi
+         })
+      } finally {
+         setLoading(false);
+      }
    }
    return (
       <Form {...form}>
