@@ -1,4 +1,5 @@
 import envConfig from "@/config";
+import { normalizePath } from "@/lib/utils";
 import { LoginResType } from "@/schemaValidations/auth.schema";
 
 type CustomOptions = Omit<RequestInit, "method"> & {
@@ -94,6 +95,7 @@ const request = async <Response>(
       status: res.status,
       payload,
    };
+   // Interceptor là nơi chúng ta xử lý response trước khi trả về cho component
    if (!res.ok) {
       if (res.status === ENTITY_ERROR_STATUS) {
          throw new EntityError(
@@ -106,10 +108,13 @@ const request = async <Response>(
          throw new HttpError(data);
       }
    }
-   if (["auth/login", "auth/register"].includes(url)) { // địt mẹ mày cái chỗ này làm tao mệt mỏi, đụ má /auth/login nên nó đéo vào cá if, nên k set được sessionToken. Tổ cha nhà nó cái chỗ này
-      clientSessionToken.value = (payload as LoginResType).data.token;
-   } else if ("/auth/logout".includes(url)) {
-      clientSessionToken.value = "";
+   if (typeof window !== "undefined") { // Đảm bảo logic này chỉ chạy ở phía client (browser)
+      if (["auth/login", "auth/register"].some((item) => item === normalizePath(url))) {
+         // địt mẹ mày cái chỗ này làm tao mệt mỏi, đụ má /auth/login nên nó đéo vào cá if, nên k set được sessionToken. Tổ cha nhà nó cái chỗ này
+         clientSessionToken.value = (payload as LoginResType).data.token;
+      } else if ("/auth/logout" === normalizePath(url)) {
+         clientSessionToken.value = "";
+      }
    }
    return data;
 };

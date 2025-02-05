@@ -5,13 +5,34 @@ import {
    RegisterBodyType,
    RegisterResType,
 } from "@/schemaValidations/auth.schema";
+import { MessageResType } from "@/schemaValidations/common.schema";
 
-const authApiRequests = {
-   login: (body: LoginBodyType) => http.post<LoginResType>("auth/login", body),
+const authApiRequest = {
+   login: (body: LoginBodyType) => http.post<LoginResType>("/auth/login", body),
    register: (body: RegisterBodyType) =>
-      http.post<RegisterResType>("auth/register", body),
+      http.post<RegisterResType>("/auth/register", body),
    auth: (body: { sessionToken: string }) =>
-      http.post("api/auth", body, { baseUrl: "" }), // baseUrl: "" để gọi API đến Next.js Server
+      http.post("/api/auth", body, {
+         baseUrl: "",
+      }),
+   logoutFromNextServerToServer: (sessionToken: string) =>
+      http.post<MessageResType>(
+         "/auth/logout",
+         {},
+         {
+            headers: {
+               Authorization: `Bearer ${sessionToken}`,
+            },
+         }
+      ),
+   logoutFromNextClientToNextServer: () =>
+      http.post<MessageResType>(
+         "/api/auth/logout",
+         {},
+         {
+            baseUrl: "",
+         }
+      ),  
 };
 
-export default authApiRequests;
+export default authApiRequest;
