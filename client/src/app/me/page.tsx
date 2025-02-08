@@ -7,7 +7,7 @@ const MeProfile = async () => {
    const cookieStore = await cookies();
    const sessionToken = cookieStore.get("sessionToken");
 
-   const response = await accountApiRequests.me(sessionToken?.value ?? '');
+   const response = await accountApiRequests.me(sessionToken?.value ?? ''); 
 
    return (
       <div className="px-40">
@@ -15,7 +15,7 @@ const MeProfile = async () => {
             <h1>Profile server</h1>
             <h1>Xin chào {response.payload.data?.name}</h1>
          </div>
-         <Profile />
+         {/* <Profile /> */}
       </div>   
    );
 };

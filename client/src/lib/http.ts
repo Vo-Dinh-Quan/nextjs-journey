@@ -1,11 +1,14 @@
 import envConfig from "@/config";
 import { normalizePath } from "@/lib/utils";
 import { LoginResType } from "@/schemaValidations/auth.schema";
+import { redirect } from "next/navigation";
 
 type CustomOptions = Omit<RequestInit, "method"> & {
    baseUrl?: string | undefined;
 };
 const ENTITY_ERROR_STATUS = 422;
+const AUTHENTICATION_ERROR_STATUS = 401;
+
 type EntityErrorPayload = {
    message: string;
    errors: {
@@ -58,6 +61,7 @@ class SessionToken {
    }
 }
 export const clientSessionToken = new SessionToken();
+let clientLogoutRequest: null | Promise<any> = null;
 
 const request = async <Response>(
    method: "GET" | "POST" | "PUT" | "DELETE",
@@ -68,7 +72,7 @@ const request = async <Response>(
 
    const baseHeaders = {
       "Content-Type": "application/json",
-      Authorization: clientSessionToken.value
+      Authorization: clientSessionToken.value // nếu clientSessionToken.value không có giá trị thì Authorization sẽ bằng chuỗi rỗng
          ? `Bearer ${clientSessionToken.value}`
          : "",
    };
@@ -104,12 +108,48 @@ const request = async <Response>(
                payload: EntityErrorPayload;
             }
          );
+      } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
+         // Nếu status code là 401, tức là sessionToken hết hạn hoặc không hợp lệ thì chúng ta sẽ logout người dùng ra khỏi hệ thống đối với client
+         //
+         if (typeof window !== "undefined") {
+            // ta cần đảm bảo logic này chỉ chạy ở client vì cookie chỉ nằm ở next client nên khi xóa cookie thì chỉ xóa ở client
+            //
+            if (!clientLogoutRequest) {
+               // biến clientLogoutRequest sẽ bằng null nếu chưa gán giá trị, nó có mục đích là để kiểm tra xem đã gọi fetch logout chưa để tránh việc gọi nhiều lần
+               clientLogoutRequest = fetch("/api/auth/logout", {
+                  method: "POST",
+                  body: JSON.stringify({ force: true }),
+                  headers: {
+                     ...baseHeaders,
+                  },
+               });
+               await clientLogoutRequest;
+               clientSessionToken.value = "";
+               clientLogoutRequest = null;
+               location.href = "/login";
+            }
+         } else { // cách mà chúng ta xử lý đối với server là cho nó chuyển sang 1 trang logout (client component) để xóa sessionToken và chuyển hướng về trang login
+            // hiểu đơn giản ở đây là chúng ta sẽ làm qua 1 bước trung gian, chuyển hướng qua trong logout là môi trường client, sau đó call api '/api/auth/logout' đến next router để xóa cookie trong client và chuyển hướng về trang login
+            const sessionToken = (
+               options?.headers as any
+            )?.Authorization?.split("Bearer ")[1]; // dòng lệnh này có nghĩa là lấy sessionToken từ headers của options và cắt chuỗi từ "Bearer " trở đi
+            redirect(`/logout?sessionToken=${sessionToken}`);
+            // đoạn logic này chúng ta chỉ đang chạy ở server trong 1 file chạy đa nền tảng, nếu chúng ta chạy ở client thì sẽ bị lỗi, theo tài liệu của nextjs thì redirect có thể chạy ở server component, route handler và server action
+            // https://nextjs.org/docs/app/api-reference/functions/redirect
+
+            // lý do mà chúng ta sử dụng thêm ?sessionToken=${sessionToken} là để chúng ta có thể lấy sessionToken từ query string của url trong trang logout tránh việc cứ khi truy cập vào url này thì nó sẽ tự động đăng xuất mà không cần sessionToken
+         }
       } else {
          throw new HttpError(data);
       }
    }
-   if (typeof window !== "undefined") { // Đảm bảo logic này chỉ chạy ở phía client (browser)
-      if (["auth/login", "auth/register"].some((item) => item === normalizePath(url))) {
+   if (typeof window !== "undefined") {
+      // Đảm bảo logic này chỉ chạy ở phía client (browser)
+      if (
+         ["auth/login", "auth/register"].some(
+            (item) => item === normalizePath(url)
+         )
+      ) {
          // địt mẹ mày cái chỗ này làm tao mệt mỏi, đụ má /auth/login nên nó đéo vào cá if, nên k set được sessionToken. Tổ cha nhà nó cái chỗ này
          clientSessionToken.value = (payload as LoginResType).data.token;
       } else if ("/auth/logout" === normalizePath(url)) {

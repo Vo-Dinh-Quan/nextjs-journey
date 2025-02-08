@@ -3,6 +3,7 @@ import { EntityError } from "@/lib/http"
 import { clsx, type ClassValue } from "clsx"
 import { UseFormSetError } from "react-hook-form"
 import { twMerge } from "tailwind-merge"
+import jwt from "jsonwebtoken"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -33,6 +34,10 @@ export const handleErrorApi = ({error, setError, duration} : {
 // Xóa đi ký tự đầu tiên của path
 export const normalizePath = (path: string) => {
   return path.startsWith("/") ? path.slice(1) : path
+}
+
+export const decodeJWT = <Payload = any>(token: string) => { // cú pháp này có nghĩa là chúng ta sẽ decode token và trả về kiểu dữ liệu Payload (mặc định là any) 
+  return jwt.decode(token) as Payload;
 }
 
 // Giả sử UI trả về lỗi: 

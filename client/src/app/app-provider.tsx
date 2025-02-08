@@ -13,6 +13,7 @@ export default function AppProvider({
       if (typeof window !== "undefined") { // bởi vì sao ở đây chúng ta cần kiểm tra typeof window !== "undefined" thêm 1 lần nữa ? trong khi chúng ta đã kiểm tra ở file lib/http.ts rồi?
 
       // ở đây chúng ta kiểm tra typeof window !== "undefined" để đảm bảo rằng code này chỉ chạy trên client side, tránh việc chạy trên server side. vì khi build ứng dụng, code sẽ chạy trên cả client và server side, nếu không kiểm tra typeof window !== "undefined" thì code sẽ chạy cả 2 bên, dẫn đến lỗi. 
+         // console.log("clientSessionToken.value", clientSessionToken.value);  
          clientSessionToken.value = initialSessionToken;
       }
    });

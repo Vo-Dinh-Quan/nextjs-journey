@@ -72,7 +72,7 @@ const LoginForm = () => {
                      <FormLabel>Email</FormLabel>
                      <FormControl>
                         <Input
-                           placeholder="Shadcn UI"
+                           placeholder="Email của bạn"
                            {...field}
                            type="email"
                            formNoValidate
@@ -91,7 +91,7 @@ const LoginForm = () => {
                      <FormLabel>Mật khẩu</FormLabel>
                      <FormControl>
                         <Input
-                           placeholder="Shadcn UI"
+                           placeholder="Vui lòng nhập mật khẩu"
                            {...field}
                            type="password"
                            autoComplete="current-password"
