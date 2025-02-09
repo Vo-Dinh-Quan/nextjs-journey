@@ -49,6 +49,8 @@ export class EntityError extends HttpError {
 
 class SessionToken {
    private token = "";
+   private _expiresAt = new Date().toISOString(); // giá trị mặc định của expiresAt là ngày hiện tại
+
    get value() {
       return this.token;
    }
@@ -58,6 +60,16 @@ class SessionToken {
          throw new Error("Cannot set token on server side");
       }
       this.token = token;
+   }
+   get expiresAt() {
+      return this._expiresAt;
+   }
+   set expiresAt(expiresAt: string) {
+      // Nếu gọi method này ở server thì sẽ bị lỗi
+      if (typeof window === "undefined") {
+         throw new Error("Cannot set token on server side");
+      }
+      this._expiresAt = expiresAt;
    }
 }
 export const clientSessionToken = new SessionToken();
@@ -125,6 +137,8 @@ const request = async <Response>(
                });
                await clientLogoutRequest;
                clientSessionToken.value = "";
+               clientSessionToken.expiresAt = new Date().toISOString();
+               // .toUTCString khác toUTCString ở chỗ nó sẽ chuyển về dạng chuỗi ngày tháng năm theo giờ UTC
                clientLogoutRequest = null;
                location.href = "/login";
             }
@@ -152,8 +166,10 @@ const request = async <Response>(
       ) {
          // địt mẹ mày cái chỗ này làm tao mệt mỏi, đụ má /auth/login nên nó đéo vào cá if, nên k set được sessionToken. Tổ cha nhà nó cái chỗ này
          clientSessionToken.value = (payload as LoginResType).data.token;
+         clientSessionToken.expiresAt = (payload as LoginResType).data.expiresAt;
       } else if ("/auth/logout" === normalizePath(url)) {
          clientSessionToken.value = "";
+         clientSessionToken.expiresAt = new Date().toISOString();
       }
    }
    return data;

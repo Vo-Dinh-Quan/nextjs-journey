@@ -45,11 +45,12 @@ const RegisterForm = () => {
       try {
          // Chờ kết quả từ fetch
          const response = await authApiRequests.register(values);
-         toast({
-            description: response.payload.message,
-         });
          await authApiRequests.auth({
             sessionToken: response.payload.data.token,
+            expiresAt: response.payload.data.expiresAt,
+         });
+         toast({
+            description: response.payload.message,
          });
          router.push("/me");
       } catch (error: any) {

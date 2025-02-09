@@ -14,17 +14,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast";
 import authApiRequests from "@/apiRequests/auth";
 import { useRouter } from "next/navigation";
 import { handleErrorApi } from "@/lib/utils";
-
 
 const LoginForm = () => {
    const [loading, setLoading] = useState(false);
    const { toast } = useToast();
    const router = useRouter();
-   
+
    // 1. Define form.
    const form = useForm<LoginBodyType>({
       resolver: zodResolver(LoginBody),
@@ -33,7 +32,7 @@ const LoginForm = () => {
          password: "",
       },
    });
-    
+
    // 2. Define a submit handler.
    async function onSubmit(values: LoginBodyType) {
       if (loading) return;
@@ -41,17 +40,20 @@ const LoginForm = () => {
       try {
          // Chờ kết quả từ fetch
          const response = await authApiRequests.login(values);
+         await authApiRequests.auth({
+            sessionToken: response.payload.data.token,
+            expiresAt: response.payload.data.expiresAt,
+         });
          toast({
             description: response.payload.message,
-         })
-         await authApiRequests.auth({ sessionToken: response.payload.data.token });
+         });
          router.push("/me");
       } catch (error: any) {
          handleErrorApi({
             error,
-            setError: form.setError // cú pháp ở đây có nghĩa là setError sẽ được gán giá trị từ form.setError 
+            setError: form.setError, // cú pháp ở đây có nghĩa là setError sẽ được gán giá trị từ form.setError
             // cú pháp này giúp chúng ta truyền giá trị setError từ form.setError vào hàm handleErrorApi
-         })
+         });
       } finally {
          setLoading(false);
       }
