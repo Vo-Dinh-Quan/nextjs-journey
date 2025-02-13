@@ -80,14 +80,53 @@ const request = async <Response>(
    url: string,
    options?: CustomOptions | undefined
 ) => {
-   const body = options?.body ? JSON.stringify(options.body) : undefined;
+   const body = options?.body
+      ? options.body instanceof FormData
+         ? options.body
+         : JSON.stringify(options.body)
+      : undefined;
+   // ở phần body chúng ta cần xử lý trong trường hợp body là FormData thì không cần chuyển về JSON string, còn nếu không phải FormData thì chuyển về JSON string
 
-   const baseHeaders = {
-      "Content-Type": "application/json",
-      Authorization: clientSessionToken.value // nếu clientSessionToken.value không có giá trị thì Authorization sẽ bằng chuỗi rỗng
-         ? `Bearer ${clientSessionToken.value}`
-         : "",
-   };
+   // Formdata dùng cho việc upload hình ảnh và tập tin
+   // Khi sử dụng FormData, chúng ta không cần phải set Content-Type: multipart/form-data trong headers vì nó sẽ tự động set Content-Type: multipart/form-data
+   const baseHeaders =
+      body instanceof FormData
+         ? {
+              Authorization: clientSessionToken.value
+                 ? `Bearer ${clientSessionToken.value}`
+                 : "",
+           }
+         : {
+              "Content-Type": "application/json",
+              Authorization: clientSessionToken.value // nếu clientSessionToken.value không có giá trị thì Authorization sẽ bằng chuỗi rỗng
+                 ? `Bearer ${clientSessionToken.value}`
+                 : "",
+           };
+
+   // cách mà GPT chỉ để không bị lỗi typescript ở header (anh Được giải quyết bằng cách thêm as any)
+   /*
+      if (body instanceof FormData) {
+      // Không cần đặt Content-Type khi sử dụng FormData
+      headers.append("Authorization", clientSessionToken.value ? `Bearer ${clientSessionToken.value}` : "");
+   } else {
+      headers.append("Content-Type", "application/json");
+      headers.append("Authorization", clientSessionToken.value ? `Bearer ${clientSessionToken.value}` : "");
+   }
+
+   if (options?.headers) {
+      Object.entries(options.headers).forEach(([key, value]) => {
+         headers.append(key, value as string);
+      });
+   }
+
+   const res = await fetch(fullUrl, {
+      ...options,
+      headers,
+      body,
+      method,
+   });
+
+   */
    const baseUrl =
       options?.baseUrl === undefined
          ? envConfig.NEXT_PUBLIC_API_ENDPOINT
@@ -101,7 +140,7 @@ const request = async <Response>(
       headers: {
          ...baseHeaders,
          ...options?.headers,
-      },
+      } as any, // chúng ta đang nói với Typescript rằng tôi biết rõ hơn nó về kiểu dữ liệu của headers, nó không cần phải kiểm tra kiểu dữ liệu của headers nữa
       body,
       method,
    });
@@ -133,7 +172,7 @@ const request = async <Response>(
                   body: JSON.stringify({ force: true }),
                   headers: {
                      ...baseHeaders,
-                  },
+                  }as any,
                });
                await clientLogoutRequest;
                clientSessionToken.value = "";
@@ -142,7 +181,8 @@ const request = async <Response>(
                clientLogoutRequest = null;
                location.href = "/login";
             }
-         } else { // cách mà chúng ta xử lý đối với server là cho nó chuyển sang 1 trang logout (client component) để xóa sessionToken và chuyển hướng về trang login
+         } else {
+            // cách mà chúng ta xử lý đối với server là cho nó chuyển sang 1 trang logout (client component) để xóa sessionToken và chuyển hướng về trang login
             // hiểu đơn giản ở đây là chúng ta sẽ làm qua 1 bước trung gian, chuyển hướng qua trong logout là môi trường client, sau đó call api '/api/auth/logout' đến next router để xóa cookie trong client và chuyển hướng về trang login
             const sessionToken = (
                options?.headers as any
@@ -166,7 +206,9 @@ const request = async <Response>(
       ) {
          // địt mẹ mày cái chỗ này làm tao mệt mỏi, đụ má /auth/login nên nó đéo vào cá if, nên k set được sessionToken. Tổ cha nhà nó cái chỗ này
          clientSessionToken.value = (payload as LoginResType).data.token;
-         clientSessionToken.expiresAt = (payload as LoginResType).data.expiresAt;
+         clientSessionToken.expiresAt = (
+            payload as LoginResType
+         ).data.expiresAt;
       } else if ("/auth/logout" === normalizePath(url)) {
          clientSessionToken.value = "";
          clientSessionToken.expiresAt = new Date().toISOString();

@@ -19,6 +19,12 @@ export default function header() {
             <li>
                <ButtonLogout />
             </li>
+            <li>
+               <Link href="/products">Danh sách sản phẩm</Link>
+            </li>
+            <li>
+               <Link href="/products/add">Thêm sản phẩm</Link>
+            </li>
          </ul>
       </div>
    );
