@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
+import Link from "next/link";
 
 export type Product = {
    id: number;
@@ -57,20 +58,9 @@ export const columns: ColumnDef<Product>[] = [
       header: "Actions",
       cell: ({ row }) => (
          <div className="flex space-x-2">
-            <Button variant={"outline"}>Edit</Button>
+            <Link href={`/products/${row.original.id}`}><Button variant={"outline"}>Edit</Button></Link>
             <Button variant={"destructive"}>Delete</Button>
          </div>
       ),
    },
 ];
-
-// Example handlers for edit and delete actions
-const handleEdit = (product: Product) => {
-   // Handle edit action
-   console.log("Edit product", product);
-};
-
-const handleDelete = (id: number) => {
-   // Handle delete action
-   console.log("Delete product with id", id);
-};
