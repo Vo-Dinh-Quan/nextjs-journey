@@ -8,13 +8,15 @@ export default async function ProductEdit({
    params: { id: string };
 }) {
    let product = undefined;
+
    try {
-      console.log(params);
-      const { payload } = await productApiRequest.getDetail(Number(params.id));
+      const resolvedParams = await params;
+      console.log("Fetching product details for ID:", resolvedParams.id);
+      const { payload } = await productApiRequest.getDetail(Number(resolvedParams.id));
       product = payload.data;
-      console.log(product);
+      console.log("Product details:", product);
    } catch (error) {
-      console.log(error);
+      console.error("Error fetching product details:", error);
    }
 
    return (
