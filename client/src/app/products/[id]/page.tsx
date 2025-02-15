@@ -1,4 +1,5 @@
 import productApiRequest from "@/apiRequests/product";
+import ProductAddForm from "@/app/products/_components/product-add-form";
 import React from "react";
 
 export default async function ProductEdit({
@@ -6,7 +7,7 @@ export default async function ProductEdit({
 }: {
    params: { id: string };
 }) {
-   let product = null;
+   let product = undefined;
    try {
       console.log(params);
       const { payload } = await productApiRequest.getDetail(Number(params.id));
@@ -17,9 +18,9 @@ export default async function ProductEdit({
    }
 
    return (
-      <div>
+      <div className="flex justify-center">
          {!product && <div>Không tìm thấy sản phẩm</div>}
-         {product && <div>{product.name}</div>}
+         {product && <ProductAddForm product={product} />}
       </div>
    );
 }

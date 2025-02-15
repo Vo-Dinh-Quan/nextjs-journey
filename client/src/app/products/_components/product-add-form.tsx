@@ -19,12 +19,16 @@ import { handleErrorApi } from "@/lib/utils";
 import {
    CreateProductBody,
    CreateProductBodyType,
+   ProductResType,
+   UpdateProductBodyType,
 } from "@/schemaValidations/product.schema";
 import productApiRequest from "@/apiRequests/product";
 import { Textarea } from "@/components/ui/textarea";
 import Image from "next/image";
 
-const ProductAddForm = () => {
+type Product = ProductResType["data"];
+
+const ProductAddForm = ({ product }: { product?: Product }) => {
    const [file, setFile] = useState<File | null>(null); // file sẽ được gán giá trị từ useState<File | null>(null)
    const [loading, setLoading] = useState(false);
    const { toast } = useToast();
@@ -34,17 +38,16 @@ const ProductAddForm = () => {
    const form = useForm<CreateProductBodyType>({
       resolver: zodResolver(CreateProductBody),
       defaultValues: {
-         name: "",
-         price: 0,
-         description: "",
-         image: "",
+         name: product?.name || "",
+         price: product?.price || 0,
+         description: product?.description || "",
+         image: product?.image || "",
       },
    });
 
-   // 2. Define a submit handler.
-   async function onSubmit(values: CreateProductBodyType) {
-      console.log(values);
-      if (loading) return;
+   const image = form.watch("image");
+
+   const createProduct = async (values: CreateProductBodyType) => {
       setLoading(true);
       try {
          const formData = new FormData();
@@ -69,6 +72,45 @@ const ProductAddForm = () => {
          });
       } finally {
          setLoading(false);
+      }
+   };
+   const updateProduct = async (_values: UpdateProductBodyType) => {
+      if (!product) return;
+      setLoading(true);
+      let values = _values;
+      try {
+         if (file) {
+            const formData = new FormData();
+            formData.append("file", file as Blob); // file as Blob nghĩa là file sẽ được ép kiểu về Blob (Blob là một kiểu dữ liệu đặc biệt trong JavaScript, nó chứa dữ liệu không xác định hoặc không cần xác định)
+            const uploadImageResponse = await productApiRequest.uploadImage(
+               formData
+            );
+            const imageUrl = uploadImageResponse.payload.data;
+            values = {
+               ...values,
+               image: imageUrl,
+            };
+         }
+         const response = await productApiRequest.update(product?.id, values);
+         toast({
+            description: response.payload.message,
+         });
+      } catch (error: any) {
+         handleErrorApi({
+            error,
+            setError: form.setError, // cú pháp ở đây có nghĩa là setError sẽ được gán giá trị từ form.setError
+            // cú pháp này giúp chúng ta truyền giá trị setError từ form.setError vào hàm handleErrorApi
+         });
+      } finally {
+         setLoading(false);
+      }
+   };
+   async function onSubmit(values: CreateProductBodyType) {
+      if (loading) return;
+      if (product) {
+         await updateProduct(values);
+      } else {
+         await createProduct(values);
       }
    }
    return (
@@ -151,8 +193,7 @@ const ProductAddForm = () => {
                                  // nếu file tồn tại
                                  setFile(file);
                                  field.onChange(
-                                    "http://localhost:3000/"
-                                    + file.name
+                                    "http://localhost:3000/" + file.name
                                  ); // fake url để có thể pass qua được zod validation
                               }
                            }}
@@ -162,16 +203,19 @@ const ProductAddForm = () => {
                   </FormItem>
                )}
             />
-            {file && (
+            {(file || image) && ( // cú pháp && đoạn này là sao ?
                <div className="flex items-center justify-around gap-4">
                   <Image
-                     src={URL.createObjectURL(file)}
+                     src={file ? URL.createObjectURL(file) : image}
                      alt="preview"
                      width={128}
                      height={128}
                      className="w-20 h-20 object-cover rounded-md"
                   />
-                  <Button type="button" variant={"destructive"} size={"sm"} 
+                  <Button
+                     type="button"
+                     variant={"destructive"}
+                     size={"sm"}
                      onClick={() => {
                         setFile(null);
                         form.setValue("image", "");
@@ -181,7 +225,7 @@ const ProductAddForm = () => {
                </div>
             )}
             <Button type="submit" className="!mt-10 w-full">
-               Thêm sản phẩm
+               {product ? "Cập nhật" : "Thêm mới"}
             </Button>
          </form>
       </Form>
