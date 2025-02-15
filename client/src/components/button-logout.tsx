@@ -18,6 +18,8 @@ export default function ButtonLogout() {
             router.push(`/login?redirectFrom=${pathname}`);
             // redirectFrom dành cho ai muốn cầu toàn, khi qua trang login thì sẽ biết được trang trước đó là trang nào, giả sử trang trước đó là trang /account thì khi qua trang login sẽ là /login?redirectFrom=/account và nếu có chúng ta sẽ hiện thông báo là buộc đăng xuất thành công
          });
+      }finally {
+         router.refresh();
       }
    };
    return (

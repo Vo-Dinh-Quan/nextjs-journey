@@ -14,9 +14,8 @@ export default function Logout() {
       const controller = new AbortController();
       const signal = controller.signal;
 
-      console.log(sessionToken);
       if (sessionToken === clientSessionToken.value) {
-         console.log(clientSessionToken.value);
+         // console.log(clientSessionToken.value);
          authApiRequest
             .logoutFromNextClientToNextServer(true, signal)
             .then((res) => {

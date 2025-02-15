@@ -189,7 +189,6 @@ const ProductAddForm = ({ product }: { product?: Product }) => {
                            }} // reset value để có thể chọn lại cùng 1 file
                            onChange={(e) => {
                               const file = e.target.files?.[0]; // ?[0] nghĩa là nếu có file thì lấy file đầu tiên, nếu không có file thì trả về undefined
-                              console.log(file?.name);
                               if (file) {
                                  // nếu file tồn tại
                                  setFile(file);

@@ -48,6 +48,7 @@ const LoginForm = () => {
             description: response.payload.message,
          });
          router.push("/me");
+         router.refresh();
       } catch (error: any) {
          handleErrorApi({
             error,
