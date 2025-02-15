@@ -1,5 +1,6 @@
 "use client";
 
+import DeleteProduct from "@/app/products/_components/delete-product";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
@@ -59,7 +60,7 @@ export const columns: ColumnDef<Product>[] = [
       cell: ({ row }) => (
          <div className="flex space-x-2">
             <Link href={`/products/${row.original.id}`}><Button variant={"outline"}>Edit</Button></Link>
-            <Button variant={"destructive"}>Delete</Button>
+            <DeleteProduct product={row.original} />
          </div>
       ),
    },

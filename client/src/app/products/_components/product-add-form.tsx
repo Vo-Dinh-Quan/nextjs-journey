@@ -64,6 +64,7 @@ const ProductAddForm = ({ product }: { product?: Product }) => {
             description: response.payload.message,
          });
          router.push("/products");
+         router.refresh(); // tránh catching lại sau khi thêm sản phẩm và chuyển hướng về trang product nhưng không hiện sản phẩm mới thêm
       } catch (error: any) {
          handleErrorApi({
             error,

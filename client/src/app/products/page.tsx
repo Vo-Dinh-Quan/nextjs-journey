@@ -9,7 +9,7 @@ export default async function page() {
    const { payload } = await productApiRequest.getList();
    const productList = payload.data;
    return (
-      <div className="container ml-20 mr-20">
+      <div className="px-40 text-justify">
          <Link href={'/products/add/'} ><Button variant={'secondary'}>Thêm sản phẩm</Button></Link>
          <div className="flex justify-center">
             {" "}
